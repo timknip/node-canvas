@@ -8,10 +8,12 @@ install:
   - ps: Install-Product node 8 x64
   # Sets Windows 7.1 SDK env vars.
   - set "PATH=%ProgramFiles(x86)%\MSBuild\14.0\Bin;%PATH%"
+  - set "MSYSTEM=MINGW64"
   - npm install -g npm node-gyp
   - set "PATH=%APPDATA%\npm;%PATH%"
   - node -v
   - npm -v
+  - node-gyp rebuild
 build: off
 test_script:
   - cmd: npm test
