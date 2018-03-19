@@ -2,10 +2,10 @@
   'conditions': [
     ['OS=="win"', {
       'variables': {
-        'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
+        'GTK_Root%': 'C:/msys64/mingw64',  # Set the location of GTK all-in-one bundle
         'with_jpeg%': 'false',
-        'with_gif%': 'false',
-        'with_rsvg%': 'false',
+        'with_gif%': 'true',
+        'with_rsvg%': 'true',
         'variables': { # Nest jpeg_root to evaluate it before with_jpeg
           'jpeg_root%': '<!(node ./util/win_jpeg_lookup)'
         },
@@ -37,7 +37,7 @@
             'files': [
               '<(GTK_Root)/bin/zlib1.dll',
               '<(GTK_Root)/bin/libintl-8.dll',
-              '<(GTK_Root)/bin/libpng14-14.dll',
+              '<(GTK_Root)/bin/libpng16-16.dll',
               '<(GTK_Root)/bin/libpangocairo-1.0-0.dll',
               '<(GTK_Root)/bin/libpango-1.0-0.dll',
               '<(GTK_Root)/bin/libpangoft2-1.0-0.dll',
@@ -78,25 +78,37 @@
       ],
       'conditions': [
         ['OS=="win"', {
+
+         'defines': [
+            'HAVE_GIF',
+            'HAVE_JPEG',
+            'HAVE_BOOLEAN', # or jmorecfg.h tries to define it
+            '_USE_MATH_DEFINES' # for M_PI
+          ],
           'libraries': [
-            '-l<(GTK_Root)/lib/cairo.lib',
-            '-l<(GTK_Root)/lib/libpng.lib',
-            '-l<(GTK_Root)/lib/pangocairo-1.0.lib',
-            '-l<(GTK_Root)/lib/pango-1.0.lib',
-            '-l<(GTK_Root)/lib/freetype.lib',
-            '-l<(GTK_Root)/lib/glib-2.0.lib',
-            '-l<(GTK_Root)/lib/gobject-2.0.lib'
+            'C:/msys64/mingw64/lib/libcairo-2.lib',
+            'C:/msys64/mingw64/lib/libpng16-16.lib',
+            'C:/msys64/mingw64/lib/libjpeg-8.lib',
+            'C:/msys64/mingw64/lib/libpango-1.0-0.lib',
+            'C:/msys64/mingw64/lib/libpangocairo-1.0-0.lib',
+            'C:/msys64/mingw64/lib/libgobject-2.0-0.lib',
+            'C:/msys64/mingw64/lib/libglib-2.0-0.lib',
+            'C:/msys64/mingw64/lib/libturbojpeg-0.lib',
+            'C:/msys64/mingw64/lib/libgif-7.lib',
+            'C:/msys64/mingw64/lib/libfreetype-6.lib'
           ],
           'include_dirs': [
-            '<(GTK_Root)/include',
-            '<(GTK_Root)/include/cairo',
-            '<(GTK_Root)/include/pango-1.0',
-            '<(GTK_Root)/include/glib-2.0',
-            '<(GTK_Root)/include/freetype2',
-            '<(GTK_Root)/lib/glib-2.0/include'
-          ],
-          'defines': [
-            '_USE_MATH_DEFINES'  # for M_PI
+            '<!(node -e "require(\'nan\')")',
+            'C:/msys64/mingw64/include',
+            'C:/msys64/mingw64/include/pango-1.0',
+            'C:/msys64/mingw64/include/cairo',
+            'C:/msys64/mingw64/include/libpng16',
+            'C:/msys64/mingw64/include/glib-2.0',
+            'C:/msys64/mingw64/lib/glib-2.0/include',
+            'C:/msys64/mingw64/include/pixman-1',
+            'C:/msys64/mingw64/include/freetype2',
+            'C:/msys64/mingw64/include/fontconfig',
+            'C:/msys64/mingw64/include/gdk-pixbuf-2.0',
           ],
           'configurations': {
             'Debug': {
@@ -146,14 +158,14 @@
               'copies': [{
                 'destination': '<(PRODUCT_DIR)',
                 'files': [
-                  '<(jpeg_root)/bin/jpeg62.dll',
+                  '<(GTK_Root)/bin/libjpeg-8.dll',
                 ]
               }],
               'include_dirs': [
-                '<(jpeg_root)/include'
+                '<(GTK_Root)/include'
               ],
               'libraries': [
-                '-l<(jpeg_root)/lib/jpeg.lib',
+                '-l<(GTK_Root)/lib/libjpeg-8.lib',
               ]
             }, {
               'libraries': [
@@ -168,8 +180,14 @@
           ],
           'conditions': [
             ['OS=="win"', {
+              'copies': [{
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  'C:/msys64/mingw64/bin/libgif-7.dll',
+                ]
+              }],
               'libraries': [
-                '-l<(GTK_Root)/lib/gif.lib'
+                '-lC:/msys64/mingw64/lib/libgif-7.lib'
               ]
             }, {
               'libraries': [
@@ -184,6 +202,15 @@
           ],
           'conditions': [
             ['OS=="win"', {
+              'copies': [{
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  '<(GTK_Root)/bin/librsvg-2-2.dll',
+                ]
+              }],
+              'include_dirs' : [
+                '<(GTK_Root)/include/librsvg-2.0'
+              ],
               'libraries': [
                 '-l<(GTK_Root)/lib/librsvg-2-2.lib'
               ]

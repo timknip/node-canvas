@@ -368,6 +368,11 @@ Image::loaded() {
   Nan::AdjustExternalMemory(_data_len);
 }
 
+void
+Image::error(Local<Value> error) {
+
+}
+
 /*
  * Returns this image's surface.
  */
