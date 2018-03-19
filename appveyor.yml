@@ -5,8 +5,7 @@ environment:
 image:
   - Visual Studio 2015
 install:
-- ps: Install-Product node 8 x64
-  - set PREBUILD_SLUG=%APPVEYOR_REPO_NAME%
+  - ps: Install-Product node 8 x64
   # Sets Windows 7.1 SDK env vars.
   - set "PATH=%ProgramFiles(x86)%\MSBuild\14.0\Bin;%PATH%"
   - npm install -g npm node-gyp
