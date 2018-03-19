@@ -13,7 +13,7 @@ install:
   - set "PATH=%APPDATA%\npm;%PATH%"
   - node -v
   - npm -v
-  - node-gyp rebuild
+  - npm install
 build: off
 test_script:
   - cmd: npm test
