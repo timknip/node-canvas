@@ -7,14 +7,29 @@
         'with_gif%': 'false',
         'with_rsvg%': 'false',
         'variables': { # Nest jpeg_root to evaluate it before with_jpeg
-          'jpeg_root%': '<!(node ./util/win_jpeg_lookup)'
+          'jpeg_root%': '<!(node ./util/win_jpeg_lookup)',
+          'is_msys%': '<!(node ./util/win_msys_lookup)'
         },
         'jpeg_root%': '<(jpeg_root)', # Take value of nested variable
+        'jpeg_dll%': 'jpeg62.dll',
+        'jpeg_lib%': 'jpeg.lib',
+        'is_msys%': '<(is_msys)',
         'conditions': [
           ['jpeg_root==""', {
             'with_jpeg%': 'false'
           }, {
             'with_jpeg%': 'true'
+          }],
+          ['is_msys=="true"', {
+            'with_jpeg%': 'true',
+            'with_gif%': 'true',
+            'with_rsvg%': 'true',
+            'GTK_Root%': 'C:/msys64/mingw64',
+            'jpeg_root%': 'C:/msys64/mingw64',
+            'jpeg_dll%': 'libjpeg-8.dll',
+            'jpeg_lib%': 'libjpeg-8.lib'
+          }, {
+            'with_rsvg%': 'false'
           }]
         ]
       }
@@ -31,7 +46,7 @@
       'target_name': 'canvas-postbuild',
       'dependencies': ['canvas'],
       'conditions': [
-        ['OS=="win"', {
+        ['OS=="win" and is_msys==""', {
           'copies': [{
             'destination': '<(PRODUCT_DIR)',
             'files': [
@@ -77,7 +92,63 @@
         'src/toBuffer.cc'
       ],
       'conditions': [
-        ['OS=="win"', {
+        ['is_msys=="true"', {
+         'defines': [
+            'HAVE_GIF',
+            'HAVE_BOOLEAN', # or jmorecfg.h tries to define it
+            '_USE_MATH_DEFINES' # for M_PI
+          ],
+          'libraries': [
+            'C:/msys64/mingw64/lib/libcairo-2.lib',
+            'C:/msys64/mingw64/lib/libpng16-16.lib',
+            'C:/msys64/mingw64/lib/libjpeg-8.lib',
+            'C:/msys64/mingw64/lib/libpango-1.0-0.lib',
+            'C:/msys64/mingw64/lib/libpangocairo-1.0-0.lib',
+            'C:/msys64/mingw64/lib/libgobject-2.0-0.lib',
+            'C:/msys64/mingw64/lib/libglib-2.0-0.lib',
+            'C:/msys64/mingw64/lib/libturbojpeg-0.lib',
+            'C:/msys64/mingw64/lib/libgif-7.lib',
+            'C:/msys64/mingw64/lib/libfreetype-6.lib',
+            'C:/msys64/mingw64/lib/libpixman-1-0.lib'
+          ],
+          'include_dirs': [
+            'C:/msys64/mingw64/include',
+            'C:/msys64/mingw64/include/pango-1.0',
+            'C:/msys64/mingw64/include/cairo',
+            'C:/msys64/mingw64/include/libpng16',
+            'C:/msys64/mingw64/include/glib-2.0',
+            'C:/msys64/mingw64/lib/glib-2.0/include',
+            'C:/msys64/mingw64/include/pixman-1',
+            'C:/msys64/mingw64/include/freetype2',
+            'C:/msys64/mingw64/include/fontconfig',
+            'C:/msys64/mingw64/include/gdk-pixbuf-2.0',
+          ],
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WarningLevel': 4,
+                  'ExceptionHandling': 1,
+                  'DisableSpecificWarnings': [
+                    4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512
+                  ]
+                }
+              }
+            },
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WarningLevel': 4,
+                  'ExceptionHandling': 1,
+                  'DisableSpecificWarnings': [
+                    4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512
+                  ]
+                }
+              }
+            }
+          }
+        }],
+        ['OS=="win" and is_msys==""', {
           'libraries': [
             '-l<(GTK_Root)/lib/cairo.lib',
             '-l<(GTK_Root)/lib/libpng.lib',
@@ -122,7 +193,8 @@
               }
             }
           }
-        }, {  # 'OS!="win"'
+        }],
+        [ 'OS!="win"', {  # 'OS!="win"'
           'libraries': [
             '<!@(pkg-config pixman-1 --libs)',
             '<!@(pkg-config cairo --libs)',
@@ -143,17 +215,11 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'copies': [{
-                'destination': '<(PRODUCT_DIR)',
-                'files': [
-                  '<(jpeg_root)/bin/jpeg62.dll',
-                ]
-              }],
               'include_dirs': [
                 '<(jpeg_root)/include'
               ],
               'libraries': [
-                '-l<(jpeg_root)/lib/jpeg.lib',
+                '-l<(jpeg_root)/lib/<(jpeg_lib)',
               ]
             }, {
               'libraries': [
@@ -167,11 +233,17 @@
             'HAVE_GIF'
           ],
           'conditions': [
-            ['OS=="win"', {
+            ['is_msys=="true"', {
+              'libraries': [
+                '-l<(GTK_Root)/lib/libgif-7.lib'
+              ]
+            }],
+            ['OS=="win" and is_msys==""', {
               'libraries': [
                 '-l<(GTK_Root)/lib/gif.lib'
               ]
-            }, {
+            }],
+            ['OS!="win"',{
               'libraries': [
                 '-lgif'
               ]
@@ -186,6 +258,9 @@
             ['OS=="win"', {
               'libraries': [
                 '-l<(GTK_Root)/lib/librsvg-2-2.lib'
+              ],
+              'include_dirs': [
+                '<(GTK_Root)/include/librsvg-2.0'
               ]
             }, {
               'include_dirs': [

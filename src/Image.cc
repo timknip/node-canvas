@@ -367,6 +367,11 @@ Image::load() {
  */
 
 void
+Image::error(Local<Value> error) {
+
+}
+
+void
 Image::loaded() {
   Nan::HandleScope scope;
   state = COMPLETE;
